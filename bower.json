@@ -1,0 +1,31 @@
+{
+  "name": "region-search-tool",
+  "version": "0.1.0",
+  "homepage": "https://github.com/alexkalderimis/region-search-tool",
+  "authors": [
+    "Alex Kalderimis <alexkalderimis@gmail.com>"
+  ],
+  "description": "An intermine steps tool for running a region search.",
+  "main": "index.js",
+  "moduleType": [
+    "amd"
+  ],
+  "license": "Apache2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jschannel": "mozilla/jschannel",
+    "imjs": "~3.2.2",
+    "react": "~0.10.0",
+    "requirejs": "~2.1.11",
+    "bootstrap": "~3.1.1",
+    "q": "#1.0.1",
+    "font-awesome": "~4.0.3",
+    "lodash": "~2.4.1"
+  }
+}
