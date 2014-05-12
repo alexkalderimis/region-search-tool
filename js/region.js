@@ -1,15 +1,16 @@
-define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', './mixins'],
-    function (React, Q, sortBy, property, mixins) {
+define([
+    'react',
+    'q',
+    'lodash/collections/sortBy',
+    'lodash/utilities/property',
+    './feature-accessors',
+    './mixins',
+    './feature-row'
+    ], function (React, Q, sortBy, property, Feature, mixins, FeatureRow) {
+
   'use strict';
 
   var d = React.DOM;
-
-  var headers = ['Feature', 'Type', 'Location'];
-  var accessors = {
-    Feature: featureIdent,
-    Type: property('class'),
-    Location: featureLocation
-  };
 
   var queryCache = {};
 
@@ -19,7 +20,6 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
 
     getInitialState: function () {
       return {
-        selected: {},
         sorting: {},
         results: []
       };
@@ -29,21 +29,25 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
 
     render: function () {
       var that = this;
+      var state = this.state;
+      var props = this.props;
+      var region = props.region;
       return d.li(
-        {className: this.props.className},
+        {className: props.className},
         d.button(
           {
-            onClick: this._select.bind(this, 'all'),
-            className: 'pull-right btn btn-default' + (this.state.selected.all ? ' active' : '')
+            ref: 'selectAll',
+            onClick: this._toggleAll,
+            className: 'pull-right btn btn-default' + (props.selected[region] ? ' active' : '')
           },
           'Select all in region'),
         d.a(
           {onClick: this._toggleCollapsed},
-          d.i({className: 'fa fa-caret-' + (this.state.collapsed ? 'right' : 'down')}),
+          d.i({className: 'fa fa-caret-' + (state.collapsed ? 'right' : 'down')}),
           ' ',
-          d.strong(null, this.props.region),
+          d.strong(null, region),
           ' ',
-          this.state.results.length,
+          state.results.length,
           ' features'),
         this._renderResults());
     },
@@ -55,6 +59,7 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
       var state = this.state;
       var sort = this.state.sorting;
 
+      try {
       if (results.length) {
         return d.table(
             {className: 'table found-regions' + (this.state.collapsed ? ' collapsed' : '')},
@@ -63,7 +68,7 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
               d.tr(
                 null,
                 d.th(null),
-                headers.map(function (h, i) {
+                Feature.headers.map(function (h, i) {
                   var sorted = sort.on === h;
                   return d.th(
                     {key: h, onClick: that.setStateProperty.bind(null, 'sorting', {on: h, asc: (!sorted || !sort.asc)})},
@@ -79,39 +84,38 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
             d.div(
               {className: 'progress-bar', role: 'progressbar', style: {width: '100%'}}));
       }
+      } catch (e) {
+        console.log(e, e.stack);
+        return d.div({className: 'alert alert-danger'}, String(e));
+      }
     },
 
     _toggleCollapsed: function () {
       this.setStateProperty('collapsed', !this.state.collapsed);
     },
 
-    _select: function (what) {
-      var state = this.state;
-      state.selected[what] = !state.selected[what];
-      this.setState(state);
+    _toggleAll: function () {
+      this.refs.selectAll.getDOMNode().blur();
+      this.props.toggleSelected(this.props.region);
     },
 
     _results: function () {
       var sorting = (this.state.sorting || {});
       var results = this.state.results.slice();
-      var f = (accessors[sorting.on] || property('objectId'));
+      var f = (Feature.accessors[sorting.on] || property('objectId'));
 
       results = sortBy(results, f);
       return !sorting.asc ? results.reverse() : results;
     },
 
     _renderFeatureRow: function (feature, i) {
-      return d.tr(
-          {key: feature.objectId, onClick: this._select.bind(this, feature.objectId)},
-          d.td(
-            null,
-            d.input(
-              {
-                type: 'checkbox',
-                onChange: function () {},
-                checked: (this.state.selected.all || this.state.selected[feature.objectId])
-              })),
-          headers.map(function (h) { return d.td({key: h}, accessors[h](feature)); }));
+      return FeatureRow({
+        key: feature.objectId,
+        region: this.props.region,
+        feature: feature,
+        selected: this.props.selected,
+        toggleSelect: this.props.toggleSelected.bind(null, feature.objectId)
+      });
     },
 
     computeState: function (props) {
@@ -133,6 +137,7 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
           running = runQuery(props.service, query);
           running.then(this.setStateProperty.bind(this, 'results'));
           running.then(function (results) {
+            props.foundFeatures(results);
             props.onCount(results.length);  
           });
         } else if (this.state.results.length !== 0) {
@@ -153,15 +158,6 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
     } else {
       return queryCache[key] = service.records(query);
     }
-  }
-
-  function featureIdent (feature) {
-    return (feature.symbol || feature.primaryIdentifier);
-  }
-
-  function featureLocation (feature) {
-    var location = (feature.chromosomeLocation || {locatedOn: {}});
-    return [location.locatedOn.primaryIdentifier, ':', location.start, '..', location.end].join('');
   }
 
 });

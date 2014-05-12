@@ -19,7 +19,10 @@ define(['react',
       return {
         totals: this.props.regions.map(always(0)),
         activeTypes: zipObject(this.props.types.map(function (_, i) { return [i, true]; })),
-        typeNames: this.props.types
+        typeNames: this.props.types.slice(),
+        regionOf: {},
+        typeOf: {},
+        selected: {}
       };
     },
 
@@ -29,7 +32,6 @@ define(['react',
       var activeTypes = this.state.activeTypes;
       var props = this.props;
       var types = props.types.filter(function (t, i) { return activeTypes[i]; });
-      console.log(types, activeTypes);
       return d.div(
         null,
         d.div(
@@ -40,7 +42,18 @@ define(['react',
             ' ',
             title,
             d.small(null, " found in ", props.organism))),
-        ToolBar({activeTypes: activeTypes, typeNames: this.state.typeNames, toggleType: this.toggleType}),
+        ToolBar({
+          activeTypes: activeTypes,
+          types: props.types,
+          totals: this.state.totals.slice(),
+          regions: this.props.regions,
+          typeNames: this.state.typeNames,
+          toggleType: this.toggleType,
+          regionOf: this.state.regionOf,
+          typeOf: this.state.typeOf,
+          selected: this.state.selected,
+          toggleSelected: this._toggleSelected
+        }),
         d.ul(
           {className: 'list-group'},
           this.props.regions.map(function (region, i) {
@@ -50,10 +63,40 @@ define(['react',
               region: region,
               service: props.service,
               types: types, 
+              selected: that.state.selected,
+              toggleSelected: that._toggleSelected,
+              foundFeatures: that._foundFeatures.bind(that, region),
               onCount: that.onCount.bind(that, i),
               organism: props.organism
             });
           })));
+    },
+
+    _foundFeatures: function (region, features) {
+      var state = this.state;
+      var regionOf = state.regionOf;
+      var typeOf = state.typeOf;
+      var changed = false;
+      features.forEach(function (feature) {
+        var id = feature.objectId;
+        if (regionOf[id] !== region) {
+          changed = true;
+          regionOf[id] = region;
+        }
+        if (typeOf[id] !== feature['class']) {
+          changed = true;
+          typeOf[id] = feature['class'];
+        }
+      });
+      if (changed) {
+        this.setState(state);
+      }
+    },
+
+    _toggleSelected: function (what) {
+      var state = this.state;
+      state.selected[what] = !state.selected[what];
+      this.setState(state);
     },
 
     onCount: function (index, n) {

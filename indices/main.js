@@ -68,7 +68,7 @@ require(['react', 'imjs', 'region-search', 'bootstrap'], function (React, imjs, 
     try {
       React.renderComponent(Main(options), document.body);
     } catch (e) {
-      console.error(e);
+      console.error(e, e.stack);
     }
   }
 });
