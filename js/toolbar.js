@@ -4,8 +4,9 @@ define([
     'lodash/arrays/compact',
     'lodash/objects/isEmpty',
     './mixins',
+    './multi-action-button',
     './type-controls'
-    ], function (React, values, compact, isEmpty, mixins, TypeControls) {
+    ], function (React, values, compact, isEmpty, mixins, MultiActionButton, TypeControls) {
 
   'use strict';
 
@@ -18,7 +19,7 @@ define([
     mixins: [mixins.ComputableState, mixins.SetStateProperty],
 
     getInitialState: function () {
-      return {exportFormat: 'fasta', selectedCount: 0};
+      return {exportFormat: 'fasta', actionType: 'list', selectedCount: 0};
     },
 
     render: function () {
@@ -36,36 +37,42 @@ define([
                 className: 'btn btn-default' + (props.selected.all ? ' active' : '')
               },
               "Select all")),
-          d.div(
-            {className: 'btn-group'},
-            d.button(
-              {className: 'btn btn-primary'},
-              'Download ',
-              this.state.selectedCount,
-              ' features as ', d.strong(null, state.exportFormat)),
-            d.button(
-              {className: 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'},
-              d.span({className: 'caret'}),
-              d.span({className: 'sr-only'}, "toggle dropdown")),
-            d.ul(
-              {className: 'dropdown-menu'},
-              ['fasta', 'gff3', 'json', 'xml'].map(function (fmt) {
-                return d.li(
-                  {
-                    key: fmt,
-                    onClick: that.setStateProperty.bind(that, 'exportFormat', fmt), 
-                    className: state.exportFormat === fmt ? 'active' : ''
-                  }, d.a(null, fmt));
-              }))),
-          d.div(
-              {className: 'btn-group'},
-              d.button(
-                {className: 'btn btn-primary', onClick: this.makeList},
-                "Make list of ", this.state.selectedCount, " features")));
+          MultiActionButton({
+            act: this._export,
+            mainAction: d.span(
+              {},
+              'Download ', state.selectedCount, ' features as ',
+              d.strong(null, state.exportFormat)),
+            options: ['fasta', 'gff3', 'json', 'xml'].map(function (fmt) {
+              return d.a(
+                {
+                  select: that.setStateProperty.bind(that, 'exportFormat', fmt),
+                  selected: state.exportFormat === fmt
+                }, fmt);
+            })
+          }),
+          MultiActionButton({
+            act: this._doAction,
+            mainAction: d.span(
+              {},
+              d.strong(null, (state.actionType === 'list' ? 'Make list' : 'View table')),
+              ' of ', state.selectedCount, ' features'),
+            options: ['list', 'table'].map(function (action) {
+              return d.a(
+                {
+                  select: that.setStateProperty.bind(that, 'actionType', action),
+                  selected: state.actionType === action
+                }, (action === 'list') ? "Make list" : "View table");
+            })
+          }));
     },
 
-    makeList: function () {
+    _doAction: function () {
       // TODO: signal intention to make list.
+    },
+
+    _export: function () {
+      // TODO: perform export.
     },
 
     computeState: function (props) {
