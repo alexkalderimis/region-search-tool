@@ -1,4 +1,10 @@
-define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], function (React, Q, zipObject, mixins, Region) {
+define(['react', 
+    'q',
+    'lodash/arrays/zipObject',
+    './mixins',
+    './region',
+    './toolbar'
+    ], function (React, Q, zipObject, mixins, Region, ToolBar) {
   'use strict';
 
   var d = React.DOM;
@@ -13,8 +19,7 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
       return {
         totals: this.props.regions.map(always(0)),
         activeTypes: zipObject(this.props.types.map(function (_, i) { return [i, true]; })),
-        typeNames: this.props.types,
-        exportFormat: 'fasta'
+        typeNames: this.props.types
       };
     },
 
@@ -35,7 +40,7 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
             ' ',
             title,
             d.small(null, " found in ", props.organism))),
-        this.renderToolBar(),
+        ToolBar({activeTypes: activeTypes, typeNames: this.state.typeNames, toggleType: this.toggleType}),
         d.ul(
           {className: 'list-group'},
           this.props.regions.map(function (region, i) {
@@ -59,81 +64,13 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
       }
     },
 
-    renderToolBar: function () {
-      var props = this.props;
-      var that = this;
-      var state = this.state;
-      return d.div(
-          {className: 'btn-toolbar'},
-          this.renderTypeControls(),
-          d.div(
-            {className: 'btn-group'},
-            d.button(
-              {className: 'btn btn-default'},
-              "Select all")),
-          d.div(
-            {className: 'btn-group'},
-            d.button(
-              {className: 'btn btn-primary'},
-              'Download as ', d.strong(null, state.exportFormat)),
-            d.button(
-              {className: 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'},
-              d.span({className: 'caret'}),
-              d.span({className: 'sr-only'}, "toggle dropdown")),
-            d.ul(
-              {className: 'dropdown-menu'},
-              ['fasta', 'gff3', 'json', 'xml'].map(function (fmt) {
-                return d.li(
-                  {
-                    key: fmt,
-                onClick: that.setStateProperty.bind(that, 'exportFormat', fmt), 
-                className: state.exportFormat === fmt ? 'active' : ''
-                  }, d.a(null, fmt));
-              }))));
-    },
-
     computeState: function (props) {
-      var naming = props.service.fetchModel().then(function (model) {
+      props.service.fetchModel().then(nameTypes).then(this.setStateProperty.bind(this, 'typeNames'));
+
+      function nameTypes (model) {
         return Q.all(props.types.map(function (type) {
           return model.makePath(type).getDisplayName();
         }));
-      });
-      naming.then(this.setStateProperty.bind(this, 'typeNames'));
-    },
-
-    renderTypeControls: function () {
-      var that = this;
-      var activeTypes = this.state.activeTypes;
-      var names = this.state.typeNames;
-      if (names.length < 5) {
-        return d.div(
-            {className: 'btn-group'},
-            names.map(function (name, i) {
-              return d.button(
-                {
-                  key: i,
-                  onClick: that.toggleType.bind(that, i),
-                  className: 'btn btn-default' + (activeTypes[i] ? ' active' : '')
-                }, name);
-            }));
-      } else {
-        return d.div(
-            {className: 'btn-group'},
-            d.button(
-              {className: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown'},
-              names.length,
-              ' types',
-              d.span({className: 'caret'})),
-            d.ul(
-              {className: 'dropdown-menu'},
-              names.map(function (name, i) {
-                return d.li(
-                  {
-                    key: i,
-                    onClick: that.toggleType.bind(that, i), 
-                    className: activeTypes[i] ? 'active' : ''
-                  }, d.a(null, name));
-              })));
       }
     },
 
