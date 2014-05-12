@@ -7,7 +7,7 @@ define([
   'use strict';
 
   var d = React.DOM;
-  
+
   var FeatureRow = React.createClass({
 
     displayName: 'FeatureRow',
@@ -27,7 +27,8 @@ define([
                 checked: any(['all', props.region, feature.objectId], this.isSelected)
               })),
           Feature.headers.map(function (h) {
-            return d.td({key: h}, Feature.accessors[h](feature)); }));
+            return d.td({key: h}, d[getCellTag(h)](null, Feature.accessors[h](feature)));
+          }));
       } catch (e) {
         return d.div({className: 'alert alert-danger'}, d.strong(null, 'Error'), String(e));
       }
@@ -40,4 +41,12 @@ define([
   });
 
   return FeatureRow;
+
+  function getCellTag (header) {
+    if (header === 'Location') {
+      return 'code';
+    } else {
+      return 'span';
+    }
+  }
 });
