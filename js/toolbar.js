@@ -100,27 +100,30 @@ define([
       // TODO: perform export.
     },
 
-    computeState: function (props) {
+    _setActionQuery: function (props, allPlease, model) {
+      try {
+      var service = props.service;
       var selected = props.selected;
       var regions = props.regions;
       var regionOf = props.regionOf;
       var typeOf = props.typeOf;
       var totals = props.totals;
-      var allPlease = (selected.all || isEmpty(compact(values(selected))));
+      var from = model.findCommonType(props.types);
+
       var actionQuery = { // The query to run when call by doAction.
-        from: 'SequenceFeature',
+        from: from,
         select: [
           'name', 'symbol', 'secondaryIdentifier',
           'organism.name',
           'chromosomeLocation.*'],
         constraints: [
           ['organism.shortName', '=', props.organism],
-          ['SequenceFeature', 'ISA', props.types]
+          [from, 'ISA', props.types]
         ]
       };
       if (allPlease) {
         actionQuery.constraints.push([
-            'SequenceFeature.chromosomeLocation', 'OVERLAPS', regions
+            'chromosomeLocation', 'OVERLAPS', regions
         ]);
       } else {
         var selectedRegions = Object.keys(selected).filter(function (thing) {
@@ -128,7 +131,7 @@ define([
         });
         if (selectedRegions.length) {
           actionQuery.constraints.push([
-              'SequenceFeature.chromosomeLocation', 'OVERLAPS', selectedRegions
+              'chromosomeLocation', 'OVERLAPS', selectedRegions
           ]);
         }
         var selectedIds = Object.keys(selected).filter(function (thing) {
@@ -136,7 +139,7 @@ define([
         });
         if (selectedIds.length) {
           actionQuery.constraints.push({
-            path: 'SequenceFeature',
+            path: from,
             op: 'IN',
             ids: selectedIds
           });
@@ -149,7 +152,7 @@ define([
       }
 
       if (props.filter && !/^\s*$/.test(props.filter)) {
-        actionQuery.constraints.push(['SequenceFeature', 'LOOKUP', props.filter]);
+        actionQuery.constraints.push([from, 'LOOKUP', props.filter]);
         if (actionQuery.constraintLogic) {
           actionQuery.constraintLogic += ' and E';
         }
@@ -158,6 +161,20 @@ define([
       if (JSON.stringify(this.state.actionQuery) !== JSON.stringify(actionQuery)) {
         this.setStateProperty('actionQuery', actionQuery);
       }
+      } catch (e) {
+        console.error(String(e), e);
+      }
+    },
+
+    computeState: function (props) {
+      var selected = props.selected;
+      var regions = props.regions;
+      var regionOf = props.regionOf;
+      var typeOf = props.typeOf;
+      var totals = props.totals;
+      var allPlease = (selected.all || isEmpty(compact(values(selected))));
+
+      props.modelPromise.then(this._setActionQuery.bind(this, props, allPlease));
 
       var selectedCount;
 
