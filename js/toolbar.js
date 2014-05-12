@@ -56,7 +56,16 @@ define([
                     onClick: that.setStateProperty.bind(that, 'exportFormat', fmt), 
                     className: state.exportFormat === fmt ? 'active' : ''
                   }, d.a(null, fmt));
-              }))));
+              }))),
+          d.div(
+              {className: 'btn-group'},
+              d.button(
+                {className: 'btn btn-primary', onClick: this.makeList},
+                "Make list of ", this.state.selectedCount, " features")));
+    },
+
+    makeList: function () {
+      // TODO: signal intention to make list.
     },
 
     computeState: function (props) {
