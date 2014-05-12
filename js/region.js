@@ -20,6 +20,7 @@ define([
 
     getInitialState: function () {
       return {
+        complete: false,
         sorting: {},
         results: []
       };
@@ -59,7 +60,6 @@ define([
       var state = this.state;
       var sort = this.state.sorting;
 
-      try {
       if (results.length) {
         return d.table(
             {className: 'table found-regions' + (this.state.collapsed ? ' collapsed' : '')},
@@ -71,22 +71,27 @@ define([
                 Feature.headers.map(function (h, i) {
                   var sorted = sort.on === h;
                   return d.th(
-                    {key: h, onClick: that.setStateProperty.bind(null, 'sorting', {on: h, asc: (!sorted || !sort.asc)})},
+                    {
+                      key: h,
+                      onClick: that.setStateProperty.bind(null,
+                                      'sorting', {on: h, asc: (!sorted || !sort.asc)})
+                    },
                     d.i({className: 'fa fa-sort' + (sorted ? ('-' + (sort.asc ? 'asc' : 'desc')) : '')}),
                     ' ', h);
                 }))),
             d.tbody(
               null,
               results.map(this._renderFeatureRow)));
-      } else {
+      } else if (this.state.complete) {
         return d.div(
-            {className: 'progress progress-striped active'},
-            d.div(
-              {className: 'progress-bar', role: 'progressbar', style: {width: '100%'}}));
-      }
-      } catch (e) {
-        console.log(e, e.stack);
-        return d.div({className: 'alert alert-danger'}, String(e));
+            {className: 'alert alert-warning'},
+            d.strong(null, 'Sorry'),
+            d.p(null, "no features found"));
+      } else {
+          return d.div(
+              {className: 'progress progress-striped active'},
+              d.div(
+                {className: 'progress-bar', role: 'progressbar', style: {width: '100%'}}));
       }
     },
 
@@ -130,18 +135,24 @@ define([
           , ['SequenceFeature', 'ISA', props.types]
         ]
       };
+      if (props.filter) {
+        query.where.push(['SequenceFeature', 'LOOKUP', props.filter]);
+      }
       var queryString = JSON.stringify(query);
+      console.log(queryString);
       if (queryString !== this.state.lastQuery) {
         this.setStateProperty('lastQuery', queryString);
         if (props.types.length) {
           running = runQuery(props.service, query);
           running.then(this.setStateProperty.bind(this, 'results'));
+          running.then(this.setStateProperty.bind(this, 'complete', true));
           running.then(function (results) {
             props.foundFeatures(results);
             props.onCount(results.length);  
           });
         } else if (this.state.results.length !== 0) {
           this.setStateProperty('results', []);
+          this.setStateProperty('complete', true);
           props.onCount(0);
         }
       }

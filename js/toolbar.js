@@ -5,8 +5,9 @@ define([
     'lodash/objects/isEmpty',
     './mixins',
     './multi-action-button',
+    './input-group',
     './type-controls'
-    ], function (React, values, compact, isEmpty, mixins, MultiActionButton, TypeControls) {
+    ], function (React, values, compact, isEmpty, mixins, MultiActionButton, InputGroup, TypeControls) {
 
   'use strict';
 
@@ -29,6 +30,12 @@ define([
       return d.div(
           {className: 'btn-toolbar'},
           this.renderTypeControls(),
+          InputGroup({
+            className: 'pull-right',
+            name: 'filter',
+            onChange: this.props.changeFilter,
+            model: this.props.filter
+          }),
           d.div(
             {className: 'btn-group'},
             d.button(

@@ -45,6 +45,8 @@ define(['react',
         ToolBar({
           activeTypes: activeTypes,
           types: props.types,
+          filter: this.state.filter,
+          changeFilter: this.setStateProperty.bind(this, 'filter'),
           totals: this.state.totals.slice(),
           regions: this.props.regions,
           typeNames: this.state.typeNames,
@@ -67,7 +69,8 @@ define(['react',
               toggleSelected: that._toggleSelected,
               foundFeatures: that._foundFeatures.bind(that, region),
               onCount: that.onCount.bind(that, i),
-              organism: props.organism
+              organism: props.organism,
+              filter: that.state.filter
             });
           })));
     },
