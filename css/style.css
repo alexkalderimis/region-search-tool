@@ -2,7 +2,10 @@
     display: none;
 }
 
-.btn-toolbar {
-    margin: 1em;
+.region-toolbar {
+    margin-bottom: 0.8em;
 }
 
+.region-toolbar .btn-toolbar {
+    margin-bottom: 0.2em;
+}
