@@ -41,20 +41,23 @@ define(['react',
             this.state.totals.reduce(add, 0),
             ' ',
             title,
-            d.small(null, " found in ", props.organism))),
+            d.small(null, " found in ", d.em(null, props.organism)))),
         ToolBar({
           activeTypes: activeTypes,
-          types: props.types,
+          allTypes: props.types,
+          types: types,
+          organism: props.organism,
+          regions: props.regions,
           filter: this.state.filter,
           changeFilter: this.setStateProperty.bind(this, 'filter'),
           totals: this.state.totals.slice(),
-          regions: this.props.regions,
           typeNames: this.state.typeNames,
           toggleType: this.toggleType,
           regionOf: this.state.regionOf,
           typeOf: this.state.typeOf,
           selected: this.state.selected,
-          toggleSelected: this._toggleSelected
+          toggleSelected: this._toggleSelected,
+          wants: this._wants
         }),
         d.ul(
           {className: 'list-group'},
@@ -73,6 +76,11 @@ define(['react',
               filter: that.state.filter
             });
           })));
+    },
+
+    _wants: function (message) {
+      message.data.service = {root: this.props.service.root};
+      this.props.wants(message);
     },
 
     _foundFeatures: function (region, features) {

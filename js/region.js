@@ -127,7 +127,7 @@ define([
       var that = this;
       var running;
       var query = {
-        select: ['primaryIdentifier', 'symbol', 'chromosomeLocation.*'],
+        select: ['name', 'primaryIdentifier', 'symbol', 'chromosomeLocation.*'],
         from: 'SequenceFeature',
         where: [
           ['organism.shortName', '=', props.organism],
@@ -139,7 +139,6 @@ define([
         query.where.push(['SequenceFeature', 'LOOKUP', props.filter]);
       }
       var queryString = JSON.stringify(query);
-      console.log(queryString);
       if (queryString !== this.state.lastQuery) {
         this.setStateProperty('lastQuery', queryString);
         if (props.types.length) {
