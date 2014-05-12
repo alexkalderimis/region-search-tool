@@ -17,7 +17,7 @@ define([
   // ------------ FUNCTIONS
 
   function featureIdent (feature) {
-    return (feature.symbol || feature.primaryIdentifier);
+    return (feature.name || feature.symbol || feature.primaryIdentifier);
   }
 
   function featureLocation (feature) {
