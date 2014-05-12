@@ -11,6 +11,7 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
 
     getInitialState: function () {
       return {
+        totals: this.props.regions.map(always(0)),
         activeTypes: zipObject(this.props.types.map(function (_, i) { return [i, true]; })),
         typeNames: this.props.types,
         exportFormat: 'fasta'
@@ -18,6 +19,7 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
     },
 
     render: function () {
+      var that = this;
       var title = this._getTitle();
       var activeTypes = this.state.activeTypes;
       var props = this.props;
@@ -29,6 +31,8 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
           {className: 'page-header'},
           d.h1(
             null,
+            this.state.totals.reduce(add, 0),
+            ' ',
             title,
             d.small(null, " found in ", props.organism))),
         this.renderToolBar(),
@@ -36,14 +40,23 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
           {className: 'list-group'},
           this.props.regions.map(function (region, i) {
             return Region({
-              key: i,
+              key: region,
               className: 'list-group-item',
               region: region,
               service: props.service,
               types: types, 
+              onCount: that.onCount.bind(that, i),
               organism: props.organism
             });
           })));
+    },
+
+    onCount: function (index, n) {
+      var state = this.state;
+      if (state.totals[index] !== n) {
+        state.totals[index] = (n || 0);
+        this.setState(state);
+      }
     },
 
     renderToolBar: function () {
@@ -61,10 +74,10 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
           d.div(
             {className: 'btn-group'},
             d.button(
-              {className: 'btn btn-default'},
-              'Download as ', state.exportFormat),
+              {className: 'btn btn-primary'},
+              'Download as ', d.strong(null, state.exportFormat)),
             d.button(
-              {className: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown'},
+              {className: 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'},
               d.span({className: 'caret'}),
               d.span({className: 'sr-only'}, "toggle dropdown")),
             d.ul(
@@ -79,14 +92,13 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
               }))));
     },
 
-    computeState: function () {
-      var that = this;
-      this.props.service.fetchModel().then(function (model) {
-        var promises = that.props.types.map(function (type) {
+    computeState: function (props) {
+      var naming = props.service.fetchModel().then(function (model) {
+        return Q.all(props.types.map(function (type) {
           return model.makePath(type).getDisplayName();
-        });
-        Q.all(promises).then(that.setStateProperty.bind(null, 'typeNames'));
+        }));
       });
+      naming.then(this.setStateProperty.bind(this, 'typeNames'));
     },
 
     renderTypeControls: function () {
@@ -143,4 +155,12 @@ define(['react', 'q', 'lodash/arrays/zipObject', './mixins', './region'], functi
   });
 
   return Main;
+
+  function add (a, b) {
+    return a + b;
+  }
+
+  function always (value) {
+    return function () { return value; };
+  }
 });

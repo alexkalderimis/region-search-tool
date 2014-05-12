@@ -116,6 +116,7 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
 
     computeState: function (props) {
       var that = this;
+      var running;
       var query = {
         select: ['primaryIdentifier', 'symbol', 'chromosomeLocation.*'],
         from: 'SequenceFeature',
@@ -125,10 +126,19 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
           , ['SequenceFeature', 'ISA', props.types]
         ]
       };
-      if (props.types.length) {
-        runQuery(props.service, query).then(this.setStateProperty.bind(null, 'results'));
-      } else {
-        this.setStateProperty('results', []);
+      var queryString = JSON.stringify(query);
+      if (queryString !== this.state.lastQuery) {
+        this.setStateProperty('lastQuery', queryString);
+        if (props.types.length) {
+          running = runQuery(props.service, query);
+          running.then(this.setStateProperty.bind(this, 'results'));
+          running.then(function (results) {
+            props.onCount(results.length);  
+          });
+        } else if (this.state.results.length !== 0) {
+          this.setStateProperty('results', []);
+          props.onCount(0);
+        }
       }
     }
 
