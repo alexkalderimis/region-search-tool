@@ -26,6 +26,6 @@
     "bootstrap": "~3.1.1",
     "q": "#1.0.1",
     "font-awesome": "~4.0.3",
-    "lodash": "~2.4.1"
+    "lodash-amd": "~2.4.1"
   }
 }

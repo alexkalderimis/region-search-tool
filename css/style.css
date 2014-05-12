@@ -1,0 +1,9 @@
+.found-regions.collapsed tr {
+    display: none;
+}
+
+.btn-toolbar {
+    margin-left: 1em;
+    margin-bottom: 1em;
+}
+
