@@ -135,17 +135,29 @@ define(['react',
     },
 
     _getTitle: function () {
-      var names = this.state.typeNames.map(function (n) { return n + 's'; });
+      var activeTypes = this.state.activeTypes;
+      var names = this.state.typeNames.map(function (n, i) {
+        return d.span({key: n, className: activeTypes[i] ? '' : 'text-muted'}, n, 's');
+      });
       if (names.length >= 3) {
         var last = names.pop();
-        return names.join(', ') + ' and ' + last;
+        return interspose(', ', names).concat([' and ', last]);
       } else {
-        return names.join(' and ');
+        return interspose(' and ', names);
       }
     }
   });
 
   return Main;
+
+  function interspose (sep, items) {
+    if (items.length === 0) return [];
+    items = items.slice();
+    var first = items.shift();
+    return items.reduce(function (ret, item) {
+      return ret.concat([sep, item]);
+    }, [first]);
+  }
 
   function add (a, b) {
     return a + b;
