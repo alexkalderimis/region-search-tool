@@ -3,7 +3,9 @@ define([
     'lodash/objects/values',
     'lodash/arrays/compact',
     'lodash/objects/isEmpty',
-    './mixins'], function (React, values, compact, isEmpty, mixins) {
+    './mixins',
+    './type-controls'
+    ], function (React, values, compact, isEmpty, mixins, TypeControls) {
 
   'use strict';
 
@@ -78,7 +80,9 @@ define([
         }, 0);
       }
 
-      this.setStateProperty('selectedCount', selectedCount);
+      if (this.state.selectedCount !== selectedCount) {
+        this.setStateProperty('selectedCount', selectedCount);
+      }
 
       function numSelectedInRegion (region) {
         return Object.keys(selected).filter(function (thing) {
@@ -92,45 +96,11 @@ define([
     },
 
     renderTypeControls: function () {
-      var that = this;
-      var activeTypes = this.props.activeTypes;
-      var names = this.props.typeNames;
-      if (names.length < 5) {
-        return d.div(
-            {className: 'btn-group'},
-            names.map(makeButton));
-      } else {
-        return d.div(
-            {className: 'btn-group'},
-            d.button(
-              {className: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown'},
-              names.length,
-              ' types',
-              d.span({className: 'caret'})),
-            d.ul(
-              {className: 'dropdown-menu'},
-              names.map(makeLi)));
-      }
-
-      function makeButton (name, i) {
-        return d.button(
-          {
-            key: i,
-            ref: name,
-            onClick: that.toggleType.bind(null, name, i),
-            className: 'btn btn-default' + (activeTypes[i] ? ' active' : '')
-          }, name);
-      }
-
-      function makeLi (name, i) {
-        return d.li(
-          {
-            key: i,
-            ref: name,
-            onClick: that.toggleType.bind(null, name, i),
-            className: activeTypes[i] ? 'active' : ''
-          }, d.a(null, name));
-      }
+      return TypeControls({
+        activeTypes: this.props.activeTypes,
+        typeNames: this.props.typeNames,
+        toggleType: this.toggleType
+      });
     },
 
     toggleType: function (name, index) {
