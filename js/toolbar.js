@@ -135,9 +135,11 @@ define([
           return selected[thing] && typeOf[thing] && !contains(selectedRegions, regionOf[thing]);
         });
         if (selectedIds.length) {
-          actionQuery.constraints.push([
-              'SequenceFeature', 'IN', selectedIds
-          ]);
+          actionQuery.constraints.push({
+            path: 'SequenceFeature',
+            op: 'IN',
+            ids: selectedIds
+          });
         }
 
         if (selectedRegions.length && selectedIds.length) {
