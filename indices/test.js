@@ -7,7 +7,15 @@ var chan = Channel.build({
 chan.call({
   method: 'init',
   params: {
-    listName: 'PL FlyTF_putativeTFs',
+    request: {
+      regions: [
+        '2L:14615455..14619002',
+        '2R:5866646..5868384',
+        '3R:2578486..2580016'
+      ],
+      types: ['Gene', 'Intron', 'Exon', 'CDS'],
+      organism: 'D. melanogaster'
+    },
     service: {
       root: "http://www.flymine.org/query"
     }
@@ -41,6 +49,6 @@ chan.bind('has-list', function (trans, data) {
 });
 
 chan.bind('wants', function (trans, params) {
-  console.log('WANT', params.what, params.data);
+  console.log('TRANSGRESSIVE WANT', params.what, params.data);
 });
 

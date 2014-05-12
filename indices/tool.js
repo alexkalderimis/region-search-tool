@@ -1,4 +1,4 @@
-// main.js
+// tool.js
 var loc = '../';
 require.config({
     baseUrl: 'js',
@@ -10,14 +10,14 @@ require.config({
         jschannel:  loc + 'bower_components/jschannel/src/jschannel',
         imjs:       loc + 'bower_components/imjs/js/im'
     },
-    'package': [
+    'packages': [
       {
         name: 'lodash',
-        location: loc + 'bower_components/lodash/'
+        location: loc + 'bower_components/lodash-amd/modern'
       },
       {
         name: 'underscore',
-        location: loc + 'bower_components/lodash/'
+        location: loc + 'bower_components/lodash-amd/'
       }
     ],
     shim: {
@@ -34,7 +34,7 @@ require.config({
     }
 });
 
-require(['react', 'imjs', './main', 'jschannel', 'bootstrap'], function (React, imjs, Main, Channel) {
+require(['react', 'imjs', './region-search', 'jschannel', 'bootstrap'], function (React, imjs, Main, Channel) {
   'use strict';
 
   // Connect to the parent window and listen for life-cycle events.
@@ -57,8 +57,11 @@ require(['react', 'imjs', './main', 'jschannel', 'bootstrap'], function (React, 
 
     options.regions = params.request.regions;
     options.types = params.request.types;
+    options.organism = params.request.organism;
+
     options.service = imjs.Service.connect(params.service);
-    options.want = wants;
+
+    options.wants = wants;
     options.has = has;
 
     React.renderComponent(Main(options), document.body);

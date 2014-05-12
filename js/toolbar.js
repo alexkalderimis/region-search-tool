@@ -48,7 +48,7 @@ define([
               mainAction: d.span(
                 {},
                 d.span(
-                  {className: 'hidden-sm hidden-xs'},
+                  {className: 'visible-lg visible-xl'},
                   'Download ', state.selectedCount, ' features as '),
                 d.strong(null, state.exportFormat)),
               options: ['fasta', 'gff3', 'json', 'xml'].map(function (fmt) {
@@ -65,7 +65,7 @@ define([
                 {},
                 d.strong(null, (state.actionType === 'list' ? 'Make list' : 'View table')),
                 d.span(
-                  {className: 'hidden-sm hidden-xs'},
+                  {className: 'visible-lg visible-xl'},
                   ' of ', state.selectedCount, ' features')),
               options: ['list', 'table'].map(function (action) {
                 return d.a(

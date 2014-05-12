@@ -47,10 +47,12 @@ require(['react', 'imjs', 'region-search', 'bootstrap'], function (React, imjs, 
     ];
     options.types = ['Gene', 'Intron', 'Exon'];
     options.organism = 'D. melanogaster';
+
     options.service = imjs.Service.connect({
       root: 'http://www.flymine.org/query/service',
       token: null 
     });
+
     options.wants = wants;
     options.has = has;
 
