@@ -120,6 +120,7 @@ define(['react', 'q', 'lodash/collections/sortBy', 'lodash/utilities/property', 
         select: ['primaryIdentifier', 'symbol', 'chromosomeLocation.*'],
         from: 'SequenceFeature',
         where: [
+          ['organism.shortName', '=', props.organism],
           ['SequenceFeature.chromosomeLocation', 'OVERLAPS', [props.region]]
           , ['SequenceFeature', 'ISA', props.types]
         ]
