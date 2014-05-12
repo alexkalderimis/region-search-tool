@@ -38,15 +38,6 @@ require.config({
 
 require(['react', 'imjs', 'region-search', 'bootstrap'], function (React, imjs, Main) {
   'use strict';
-
-  var sessionRequest = new XMLHttpRequest();
-  sessionRequest.onload = withSession;
-  sessionRequest.open('GET', "http://www.flymine.org/query/service/session", true);
-  sessionRequest.responseType = 'json';
-  sessionRequest.send();
-
-  function withSession (e) {
-
     var options = {};
 
     options.regions = [
@@ -58,19 +49,16 @@ require(['react', 'imjs', 'region-search', 'bootstrap'], function (React, imjs, 
     options.organism = 'D. melanogaster';
     options.service = imjs.Service.connect({
       root: 'http://www.flymine.org/query/service',
-      token: sessionRequest.response.token
+      token: null 
     });
-    options.want = wants;
+    options.wants = wants;
     options.has = has;
-
-    console.log(options, Main);
 
     try {
       React.renderComponent(Main(options), document.body);
     } catch (e) {
       console.error(e, e.stack);
     }
-  }
 });
 
 
