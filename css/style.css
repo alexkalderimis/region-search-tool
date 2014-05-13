@@ -9,3 +9,9 @@
 .region-toolbar .btn-toolbar {
     margin-bottom: 0.2em;
 }
+
+@media screen and (max-width: 1024px) {
+    .hidden-tablet {
+        display: none;
+    }
+}
