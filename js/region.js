@@ -130,11 +130,16 @@ define([
         select: ['name', 'primaryIdentifier', 'symbol', 'chromosomeLocation.*'],
         from: 'SequenceFeature',
         where: [
-          ['organism.shortName', '=', props.organism],
           ['SequenceFeature.chromosomeLocation', 'OVERLAPS', [props.region]]
-          , ['SequenceFeature', 'ISA', props.types]
         ]
       };
+      if (props.organism) { // Organism is optional.
+        query.where.push(['organism.shortName', '=', props.organism]);
+      }
+      // Sub-types are optional.
+      if (props.types && !(props.types.length === 1 && props.types[0] === 'SequenceFeature')) {
+        query.where.push(['SequenceFeature', 'ISA', props.types]);
+      }
       if (props.filter) {
         query.where.push(['SequenceFeature', 'LOOKUP', props.filter]);
       }
